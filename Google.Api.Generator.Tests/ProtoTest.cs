@@ -71,7 +71,16 @@ namespace Google.Api.Generator.Tests
             // Or include `// TEST_DISABLE` to disable testing of the entire file.
             var dirName = testProtoNames.First();
             var protoPaths = testProtoNames.Select(x => Path.Combine("ProtoTests", dirName, $"{x}.proto"));
-            var files = Run(protoPaths, $"testing.{dirName.ToLowerInvariant()}",
+            var package = $"testing.{dirName.ToLowerInvariant()}";
+
+            if (testProtoNames.SingleOrDefault() == "Showcase")
+            {
+                protoPaths = new[] {"compliance.proto", "echo.proto", "identity.proto", "messaging.proto", "sequence.proto", "testing.proto"}
+                    .Select(f => Path.Combine("ProtoTests", "Showcase", "google", "showcase", "v1beta1", $"{f}"));
+                package = "google.showcase.v1beta1";
+            }
+            
+            var files = Run(protoPaths, package,
                 grpcServiceConfigPath, commonResourcesConfigPaths);
             // Check output is present.
             Assert.NotEmpty(files);
@@ -216,6 +225,9 @@ namespace Google.Api.Generator.Tests
 
         [Fact]
         public void OptionalFields() => ProtoTestSingle("OptionalFields", ignoreCsProj: true, ignoreUnitTests: true, ignoreSnippets: true);
+        
+        [Fact]
+        public void Showcase() => ProtoTestSingle("Showcase", ignoreCsProj: true, ignoreUnitTests: true, ignoreSnippets: true);
 
         // Build tests are testing `csproj` file generation only.
         // All other generated code is effectively "build tested" when this test project is built.
